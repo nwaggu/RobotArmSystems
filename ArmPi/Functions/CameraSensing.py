@@ -20,6 +20,7 @@ class ColorSensing():
         self.count = 0
         self.center_list = []
         self.start_count_t1 = True
+        self.t1 = 0
         #Camera setup
         self.my_camera = Camera.Camera()
         self.my_camera.camera_open()
@@ -113,8 +114,8 @@ class ColorSensing():
             self.center_list.extend((self.world_x, self.world_y))
             if self.start_count_t1:
                 self.start_count_t1 = False
-                t1 = time.time()
-            if time.time() - t1 > 1:
+                self.t1 = time.time()
+            if time.time() - self.t1 > 1:
                 self.rotation_angle = self.rect[2] 
                 self.start_count_t1 = True
                 self.world_X, self.world_Y = np.mean(np.array(self.center_list).reshape(count, 2), axis=0)
@@ -122,7 +123,7 @@ class ColorSensing():
                 self.count = 0
                 self.start_pick_up = True
         else:
-            t1 = time.time()
+            self.t1 = time.time()
             self.start_count_t1 = True
             self.center_list = []
             self.count = 0
