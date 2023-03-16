@@ -12,6 +12,7 @@ from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 import atexit
+from concurrency import Bus
 
 
 class ColorSensing():
@@ -42,8 +43,10 @@ class ColorSensing():
             'white': (255, 255, 255),
         }
         self.color_list = []
+        
+        
 
-    def processImage(self, img):
+    def processImage(self, img, roi_bus:Bus, start_pickup_bus:Bus):
         img_copy = img.copy()
         img_h, img_w = img.shape[:2]
         cv2.line(img, (0, int(img_h / 2)), (img_w, int(img_h / 2)), (0, 0, 200), 1)
@@ -51,8 +54,11 @@ class ColorSensing():
         frame_resize = cv2.resize(img_copy, self.resolution, interpolation=cv2.INTER_NEAREST)
         frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
         #If a recognized object is detected in an area, the area is detected until there is no
-        if self.get_roi:
-            get_roi = False
+        self.get_roi = roi_bus.read()
+        start_pickup = start_pickup_bus.read()
+        if self.get_roi and not start_pickup:
+            self.get_roi = False
+            roi_bus.write(self.get_roi)
             frame_gb = getMaskROI(frame_gb, self.roi, self.resolution)     
         frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
         return frame_lab
@@ -96,11 +102,7 @@ class ColorSensing():
             #track = True
         return img
     
-    
-    def decisionMaking(self):
-        self.last_x, self.last_y = self.world_x, self.world_y
-        distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
-            
+    def main_color(self):
         if self.color_area_max == 'red':  #红色最大
             color = 1
         elif self.color_area_max == 'green':  #绿色最大
@@ -109,6 +111,12 @@ class ColorSensing():
             color = 3
         else:
             color = 0
+        return color
+    def decisionMaking(self, position_bus:Bus, color_bus:Bus, roi_bus, start_pickup_bus):
+        self.last_x, self.last_y = self.world_x, self.world_y
+        distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
+            
+        color = self.main_color()
         self.color_list.append(color)
 
         if distance < 0.5:
@@ -124,13 +132,15 @@ class ColorSensing():
                 self.center_list = []
                 self.count = 0
                 self.start_pick_up = True
+                position_bus.write([self.world_X, self.world_Y, self.rotation_angle])
+                start_pickup_bus.write(self.start_pick_up)
         else:
             self.t1 = time.time()
             self.start_count_t1 = True
             self.center_list = []
             self.count = 0
 
-        if len(self.color_list) == 3:  #Multiple judgments
+        if len(self.color_list) == 3:  #If there are multiple colors on the board
             # take the average
             color = int(round(np.mean(np.array(self.color_list))))
             self.color_list = []
@@ -148,22 +158,23 @@ class ColorSensing():
                 self.draw_color = self.range_rgb["black"]
         else:
             self.draw_color = (0, 0, 0)
-            self.detect_color = "None"   
+            self.detect_color = "None" 
+        color_bus.write(self.detect_color) 
     
     
       
-    def run(self, img):
-        frame_lab = self.processImage(img)
+    def run(self, img, position_bus, color_bus, roi_bus, start_pickup_bus):
+        frame_lab = self.processImage(img, roi_bus, start_pickup_bus)
         areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
         return self.getLocation(areaMaxContour, area_max, img)
         
         
-    def start(self):
+    def start(self, position_bus, color_bus, roi_bus, start_pickup_bus):
         while True:
             img = self.my_camera.frame
             if img is not None:
                 frame = img.copy()
-                Frame = self.run(frame)           
+                Frame = self.run(frame, position_bus, color_bus, roi_bus, start_pickup_bus)           
                 cv2.imshow('Frame', Frame)
                 key = cv2.waitKey(1)
                 if key == 27:
@@ -188,6 +199,11 @@ class ColorSensing():
                     area_max_contour = c
 
         return area_max_contour, contour_area_max  # 返回最大的轮廓
-    
+
+
+pos = Bus([0,0,0])
+color = Bus(None) 
+roia = Bus(False)  
+start = Bus(False)
 test = ColorSensing()
-test.start()
+test.start(position_bus=pos,color_bus=color,roi_bus=roia)
