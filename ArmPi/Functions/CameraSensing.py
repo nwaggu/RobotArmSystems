@@ -83,8 +83,8 @@ class ColorSensing():
             roi = getROI(box) #Get roi area
             get_roi = True
 
-            img_centerx, img_centery = getCenter(rect, roi, size, square_length)  # Get the coordinates of the center of the block
-            world_x, world_y = convertCoordinate(img_centerx, img_centery, size) #Convert to real world coordinates
+            img_centerx, img_centery = getCenter(rect, roi, self.resolution, square_length)  # Get the coordinates of the center of the block
+            world_x, world_y = convertCoordinate(img_centerx, img_centery, self.resolution) #Convert to real world coordinates
             
             
             cv2.drawContours(img, [box], -1, range_rgb[detect_color], 2)
