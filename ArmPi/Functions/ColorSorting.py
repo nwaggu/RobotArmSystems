@@ -160,9 +160,8 @@ def move():
     }
     while True:
         if __isRunning:        
-            if detect_color != 'None' and start_pick_up:  #如果检测到方块没有移动一段时间后，开始夹取
-                #移到目标位置，高度6cm, 通过返回的结果判断是否能到达指定位置
-                #如果不给出运行时间参数，则自动计算，并通过结果返回
+            if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping        #移到目标位置，高度6cm, 通过返回的结果判断是否能到达指定位置
+                #If no runtime parameter is given, it is automatically calculated and returned by the result
                 set_rgb(detect_color)
                 setBuzzer(0.1)
                 result = AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
@@ -170,7 +169,7 @@ def move():
                     unreachable = True
                 else:
                     unreachable = False
-                    time.sleep(result[2]/1000) #如果可以到达指定位置，则获取运行时间
+                    time.sleep(result[2]/1000) #If the specified location can be reached, get the running time
 
                     if not __isRunning:
                         continue
@@ -278,7 +277,7 @@ def run(img):
 
     frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
     frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
-    #如果检测到某个区域有识别到的物体，则一直检测该区域直到没有为止
+    #If a recognized object is detected in an area, the area is detected until there is no
     if get_roi and not start_pick_up:
         get_roi = False
         frame_gb = getMaskROI(frame_gb, roi, size)      
@@ -297,7 +296,7 @@ def run(img):
                 contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  #找出轮廓
                 areaMaxContour, area_max = getAreaMaxContour(contours)  #找出最大轮廓
                 if areaMaxContour is not None:
-                    if area_max > max_area:#找最大面积
+                    if area_max > max_area:#find the largest area
                         max_area = area_max
                         color_area_max = i
                         areaMaxContour_max = areaMaxContour
@@ -347,8 +346,8 @@ def run(img):
                     center_list = []
                     count = 0
 
-                if len(color_list) == 3:  #多次判断
-                    # 取平均值
+                if len(color_list) == 3:  #Multiple judgments
+                    # take the average
                     color = int(round(np.mean(np.array(color_list))))
                     color_list = []
                     if color == 1:
