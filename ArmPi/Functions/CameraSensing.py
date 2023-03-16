@@ -42,7 +42,13 @@ class ColorSensing():
         #self.world_x, self.world_y
         #self.start_count_t1, self.t1
         #self.start_pick_up, self.first_move
-
+        self.range_rgb = {
+            'red': (0, 0, 255),
+            'blue': (255, 0, 0),
+            'green': (0, 255, 0),
+            'black': (0, 0, 0),
+            'white': (255, 255, 255),
+        }
 
     def processImage(self, img):
         
@@ -87,9 +93,9 @@ class ColorSensing():
             world_x, world_y = convertCoordinate(img_centerx, img_centery, self.resolution) #Convert to real world coordinates
             
             
-            cv2.drawContours(img, [box], -1, range_rgb[detect_color], 2)
+            cv2.drawContours(img, [box], -1, self.range_rgb[detect_color], 2)
             cv2.putText(img, '(' + str(world_x) + ',' + str(world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, range_rgb[detect_color], 1) #draw center point
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[detect_color], 1) #draw center point
             distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) #Compare the last coordinates to determine whether to move
             last_x, last_y = world_x, world_y
             track = True
