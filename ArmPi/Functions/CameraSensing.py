@@ -26,21 +26,21 @@ class ColorSensing():
         self.resolution = (640, 480)
 
         self.roi = ()
-        self.rect
-        self.count
-        self.track
-        self.get_roi
-        self.center_list
-        self.__isRunning
-        self.unreachable
-        self.detect_color
-        self.action_finish
-        self.rotation_angle
-        self.last_x, self.last_y
-        self.world_X, self.world_Y
-        self.world_x, self.world_y
-        self.start_count_t1, self.t1
-        self.start_pick_up, self.first_move
+        #self.rect
+        #self.count
+        #self.track
+        #self.get_roi
+        #self.center_list
+        #self.__isRunning
+        #self.unreachable
+        #self.detect_color
+        #self.action_finish
+        #self.rotation_angle
+        #self.last_x, self.last_y
+        #self.world_X, self.world_Y
+        #self.world_x, self.world_y
+        #self.start_count_t1, self.t1
+        #self.start_pick_up, self.first_move
 
 
     def processImage(self, img):
