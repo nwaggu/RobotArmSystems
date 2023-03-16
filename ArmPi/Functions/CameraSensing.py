@@ -120,7 +120,7 @@ class ColorSensing():
             if time.time() - self.t1 > 1:
                 self.rotation_angle = self.rect[2] 
                 self.start_count_t1 = True
-                self.world_X, self.world_Y = np.mean(np.array(self.center_list).reshape(count, 2), axis=0)
+                self.world_X, self.world_Y = np.mean(np.array(self.center_list).reshape(self.count, 2), axis=0)
                 self.center_list = []
                 self.count = 0
                 self.start_pick_up = True
