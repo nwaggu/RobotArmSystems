@@ -75,7 +75,7 @@ class ColorSensing():
         for i in color_range:
             if i in self.target_color:
                 self.detect_color = i
-                frame_mask = cv2.inRange(frame_lab, color_range[detect_color][0], color_range[detect_color][1])  #Perform bitwise operations on original image and mask
+                frame_mask = cv2.inRange(frame_lab, color_range[self.detect_color][0], color_range[self.detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
                 contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  #Find the outline
@@ -105,7 +105,7 @@ class ColorSensing():
       
     def run(self, img):
         frame_lab = self.processImage(img)
-        areaMaxContour, area_max, detect_color = self.getMaxValidAreas(frame_lab)
+        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
         return self.getLocation(areaMaxContour, area_max, img)
         
         
