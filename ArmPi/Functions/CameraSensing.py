@@ -37,6 +37,7 @@ class ColorSensing():
             'black': (0, 0, 0),
             'white': (255, 255, 255),
         }
+        self.color_list = []
 
     def processImage(self, img):
         img_copy = img.copy()
@@ -102,7 +103,7 @@ class ColorSensing():
             color = 3
         else:
             color = 0
-        color_list.append(color)
+        self.color_list.append(color)
 
         if distance < 0.5:
             count += 1
@@ -123,10 +124,10 @@ class ColorSensing():
             center_list = []
             count = 0
 
-        if len(color_list) == 3:  #Multiple judgments
+        if len(self.color_list) == 3:  #Multiple judgments
             # take the average
-            color = int(round(np.mean(np.array(color_list))))
-            color_list = []
+            color = int(round(np.mean(np.array(self.color_list))))
+            self.color_list = []
             if color == 1:
                 self.detect_color = 'red'
                 self.draw_color = self.range_rgb["red"]
