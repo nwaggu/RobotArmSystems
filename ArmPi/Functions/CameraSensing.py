@@ -97,7 +97,7 @@ class ColorSensing():
       
     def run(self, img):
         frame_lab = self.processImage(img)
-        areaMaxContour, area_max = self.getMaxValidAreas()
+        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
         return self.getLocation(areaMaxContour, area_max, img)
         
         
