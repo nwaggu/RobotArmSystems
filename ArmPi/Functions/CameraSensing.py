@@ -32,7 +32,7 @@ class ColorSensing():
         self.roi = ()
         self.last_x, self.last_y = 0, 0
         self.get_roi = False
-        self.target_color = ('red')
+        self.target_color = ('red', 'blue', 'green')
         self.detect_color = ""
         self.range_rgb = {
             'red': (0, 0, 255),
