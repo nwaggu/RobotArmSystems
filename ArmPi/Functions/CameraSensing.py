@@ -62,6 +62,7 @@ class ColorSensing():
         max_area = 0
         area_max = 0
         areaMaxContour = 0
+        areaMaxContour_max = 0
         for i in color_range:
             if i in self.target_color:
                 self.detect_color = i
@@ -74,7 +75,8 @@ class ColorSensing():
                     if area_max > max_area:#find the largest area
                         max_area = area_max
                         self.color_area_max = i
-                        areaMaxContour_max = areaMaxContour        
+                        areaMaxContour_max = areaMaxContour 
+                   
         return areaMaxContour_max, max_area
     
     
