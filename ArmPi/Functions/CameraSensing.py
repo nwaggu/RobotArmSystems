@@ -26,23 +26,10 @@ class ColorSensing():
         self.resolution = (640, 480)
 
         self.roi = ()
-        #self.rect
-        #self.count
-        #self.track
+        self.last_x, self.last_y = 0, 0
         self.get_roi = False
         self.target_color = ('red')
         self.detect_color = ""
-        #self.center_list
-        #self.__isRunning
-        #self.unreachable
-        #self.detect_color
-        #self.action_finish
-        #self.rotation_angle
-        #self.last_x, self.last_y
-        #self.world_X, self.world_Y
-        #self.world_x, self.world_y
-        #self.start_count_t1, self.t1
-        #self.start_pick_up, self.first_move
         self.range_rgb = {
             'red': (0, 0, 255),
             'blue': (255, 0, 0),
@@ -52,14 +39,10 @@ class ColorSensing():
         }
 
     def processImage(self, img):
-        
         img_copy = img.copy()
         img_h, img_w = img.shape[:2]
         cv2.line(img, (0, int(img_h / 2)), (img_w, int(img_h / 2)), (0, 0, 200), 1)
         cv2.line(img, (int(img_w / 2), 0), (int(img_w / 2), img_h), (0, 0, 200), 1)
-        #Check if running?
-        #if not __isRunning:
-        #    return img
         frame_resize = cv2.resize(img_copy, self.resolution, interpolation=cv2.INTER_NEAREST)
         frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
         #If a recognized object is detected in an area, the area is detected until there is no
@@ -70,6 +53,8 @@ class ColorSensing():
         return frame_lab
         
     def getMaxValidAreas(self, frame_lab):
+        self.color_area_max = None
+        max_area = 0
         area_max = 0
         areaMaxContour = 0
         for i in color_range:
@@ -80,27 +65,84 @@ class ColorSensing():
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
                 contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  #Find the outline
                 areaMaxContour, area_max = self.getAreaMaxContour(contours)  # Find the largest contour
-        return areaMaxContour, area_max
+                if areaMaxContour is not None:
+                    if area_max > max_area:#find the largest area
+                        max_area = area_max
+                        self.color_area_max = i
+                        areaMaxContour_max = areaMaxContour        
+        return areaMaxContour_max, max_area
     
-    def getLocation(self, areaMaxContour, area_max, img):
-        if area_max > 2500:  # Have found the largest area
-            rect = cv2.minAreaRect(areaMaxContour)
-            box = np.int0(cv2.boxPoints(rect))
-
+    
+    def getLocation(self, areaMaxContour_max, max_area, img):
+        if max_area > 2500:  # Have found the largest area
+            self.rect = cv2.minAreaRect(areaMaxContour_max)
+            box = np.int0(cv2.boxPoints(self.rect))
             roi = getROI(box) #Get roi area
             get_roi = True
-
-            img_centerx, img_centery = getCenter(rect, roi, self.resolution, square_length)  # Get the coordinates of the center of the block
-            world_x, world_y = convertCoordinate(img_centerx, img_centery, self.resolution) #Convert to real world coordinates
-            
-            
-            cv2.drawContours(img, [box], -1, self.range_rgb[self.detect_color], 2)
-            cv2.putText(img, '(' + str(world_x) + ',' + str(world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.detect_color], 1) #draw center point
-            #distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) #Compare the last coordinates to determine whether to move
-            #last_x, last_y = world_x, world_y
+            img_centerx, img_centery = getCenter(self.rect, roi, self.resolution, square_length)  # Get the coordinates of the center of the block
+            self.world_x, self.world_y = convertCoordinate(img_centerx, img_centery, self.resolution) #Convert to real world coordinates
+        
+            cv2.drawContours(img, [box], -1, self.range_rgb[self.color_area_max], 2)
+            cv2.putText(img, '(' + str(self.world_x) + ',' + str(self.world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.color_area_max], 1) #draw center point
+            self.decisionMaking()
             #track = True
         return img
+    
+    
+    def decisionMaking(self):
+        self.last_x, self.last_y = self.world_x, self.world_y
+        distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
+            
+        if self.color_area_max == 'red':  #红色最大
+            color = 1
+        elif self.color_area_max == 'green':  #绿色最大
+            color = 2
+        elif self.color_area_max == 'blue':  #蓝色最大
+            color = 3
+        else:
+            color = 0
+        color_list.append(color)
+
+        if distance < 0.5:
+            count += 1
+            center_list.extend((self.world_x, self.world_y))
+            if start_count_t1:
+                start_count_t1 = False
+                t1 = time.time()
+            if time.time() - t1 > 1:
+                self.rotation_angle = self.rect[2] 
+                start_count_t1 = True
+                self.world_X, self.world_Y = np.mean(np.array(center_list).reshape(count, 2), axis=0)
+                center_list = []
+                count = 0
+                self.start_pick_up = True
+        else:
+            t1 = time.time()
+            start_count_t1 = True
+            center_list = []
+            count = 0
+
+        if len(color_list) == 3:  #Multiple judgments
+            # take the average
+            color = int(round(np.mean(np.array(color_list))))
+            color_list = []
+            if color == 1:
+                self.detect_color = 'red'
+                self.draw_color = self.range_rgb["red"]
+            elif color == 2:
+                self.detect_color = 'green'
+                self.draw_color = self.range_rgb["green"]
+            elif color == 3:
+                self.detect_color = 'blue'
+                self.draw_color = self.range_rgb["blue"]
+            else:
+                self.detect_color = 'None'
+                self.draw_color = self.range_rgb["black"]
+        else:
+            self.draw_color = (0, 0, 0)
+            self.detect_color = "None"   
+    
     
       
     def run(self, img):
