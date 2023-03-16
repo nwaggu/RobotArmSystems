@@ -119,7 +119,7 @@ class ColorSensing():
         cv2.destroyAllWindows()
     
     
-    def getAreaMaxContour(contours):
+    def getAreaMaxContour(self, contours):
         contour_area_temp = 0
         contour_area_max = 0
         area_max_contour = None
