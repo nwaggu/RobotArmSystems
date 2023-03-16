@@ -29,7 +29,7 @@ class ColorSensing():
         #self.rect
         #self.count
         #self.track
-        #self.get_roi
+        self.get_roi = False
         #self.center_list
         #self.__isRunning
         #self.unreachable
@@ -55,7 +55,7 @@ class ColorSensing():
         frame_resize = cv2.resize(img_copy, self.resolution, interpolation=cv2.INTER_NEAREST)
         frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
         #If a recognized object is detected in an area, the area is detected until there is no
-        if get_roi and self.start_pick_up:
+        if self.get_roi:
             get_roi = False
             frame_gb = getMaskROI(frame_gb, self.roi, self.resolution)     
         frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
