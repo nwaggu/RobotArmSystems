@@ -97,9 +97,9 @@ class ColorSensing():
             cv2.drawContours(img, [box], -1, self.range_rgb[self.detect_color], 2)
             cv2.putText(img, '(' + str(world_x) + ',' + str(world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.detect_color], 1) #draw center point
-            distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) #Compare the last coordinates to determine whether to move
-            last_x, last_y = world_x, world_y
-            track = True
+            #distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) #Compare the last coordinates to determine whether to move
+            #last_x, last_y = world_x, world_y
+            #track = True
         return img
     
       
