@@ -31,6 +31,7 @@ class ColorSensing():
         #self.track
         self.get_roi = False
         self.target_color = ('red')
+        self.detect_color = ""
         #self.center_list
         #self.__isRunning
         #self.unreachable
@@ -73,7 +74,7 @@ class ColorSensing():
         areaMaxContour = 0
         for i in color_range:
             if i in self.target_color:
-                detect_color = i
+                self.detect_color = i
                 frame_mask = cv2.inRange(frame_lab, color_range[detect_color][0], color_range[detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
@@ -93,9 +94,9 @@ class ColorSensing():
             world_x, world_y = convertCoordinate(img_centerx, img_centery, self.resolution) #Convert to real world coordinates
             
             
-            cv2.drawContours(img, [box], -1, self.range_rgb[detect_color], 2)
+            cv2.drawContours(img, [box], -1, self.range_rgb[self.detect_color], 2)
             cv2.putText(img, '(' + str(world_x) + ',' + str(world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[detect_color], 1) #draw center point
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.detect_color], 1) #draw center point
             distance = math.sqrt(pow(world_x - last_x, 2) + pow(world_y - last_y, 2)) #Compare the last coordinates to determine whether to move
             last_x, last_y = world_x, world_y
             track = True
@@ -104,7 +105,7 @@ class ColorSensing():
       
     def run(self, img):
         frame_lab = self.processImage(img)
-        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
+        areaMaxContour, area_max, detect_color = self.getMaxValidAreas(frame_lab)
         return self.getLocation(areaMaxContour, area_max, img)
         
         
