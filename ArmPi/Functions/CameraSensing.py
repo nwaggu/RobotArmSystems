@@ -12,7 +12,7 @@ from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 import atexit
-__target_color = ('red',)
+
 
 class ColorSensing():
 
@@ -30,6 +30,7 @@ class ColorSensing():
         #self.count
         #self.track
         self.get_roi = False
+        self.target_color = ('red')
         #self.center_list
         #self.__isRunning
         #self.unreachable
@@ -65,7 +66,7 @@ class ColorSensing():
         area_max = 0
         areaMaxContour = 0
         for i in color_range:
-            if i in __target_color:
+            if i in self.target_color:
                 detect_color = i
                 frame_mask = cv2.inRange(frame_lab, color_range[detect_color][0], color_range[detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
