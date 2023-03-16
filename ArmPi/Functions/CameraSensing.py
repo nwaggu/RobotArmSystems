@@ -18,6 +18,7 @@ class ColorSensing():
 
     def __init__(self):
         self.count = 0
+        self.center_list = []
         #Camera setup
         self.my_camera = Camera.Camera()
         self.my_camera.camera_open()
@@ -108,21 +109,21 @@ class ColorSensing():
 
         if distance < 0.5:
             self.count += 1
-            center_list.extend((self.world_x, self.world_y))
+            self.center_list.extend((self.world_x, self.world_y))
             if start_count_t1:
                 start_count_t1 = False
                 t1 = time.time()
             if time.time() - t1 > 1:
                 self.rotation_angle = self.rect[2] 
                 start_count_t1 = True
-                self.world_X, self.world_Y = np.mean(np.array(center_list).reshape(count, 2), axis=0)
-                center_list = []
+                self.world_X, self.world_Y = np.mean(np.array(self.center_list).reshape(count, 2), axis=0)
+                self.center_list = []
                 self.count = 0
                 self.start_pick_up = True
         else:
             t1 = time.time()
             start_count_t1 = True
-            center_list = []
+            self.center_list = []
             self.count = 0
 
         if len(self.color_list) == 3:  #Multiple judgments
