@@ -29,6 +29,7 @@ class ArmMove():
     
     #Runs color sorting code
     def colorSort(self, position_bus:Bus ,color_bus:Bus,roi_bus:Bus, start_pickup_bus:Bus):
+        print("Is this even running")
         #Get targets from Bus
         position = position_bus.read()
         world_X = position[0]
