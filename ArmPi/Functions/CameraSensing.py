@@ -190,7 +190,7 @@ class ColorSensing():
         return self.getLocation(areaMaxContour, area_max, img, position_bus, color_bus, start_pickup_bus)
         
         
-    def start(self, position_bus, color_bus, roi_bus, start_pickup_bus):
+    def start(self, position_bus, color_bus, roi_bus, start_pickup_bus, delay):
         while True:
             img = self.my_camera.frame
             if img is not None:
@@ -200,6 +200,7 @@ class ColorSensing():
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
+            time.sleep(delay)
         self.cleanup()
      
             
@@ -235,7 +236,7 @@ class ArmMove():
         atexit.register(self.cleanup)
     
     #Runs color sorting code
-    def colorSort(self, position_bus:Bus ,color_bus:Bus,roi_bus:Bus, start_pickup_bus:Bus):
+    def colorSort(self, position_bus:Bus ,color_bus:Bus,roi_bus:Bus, start_pickup_bus:Bus, delay):
         print("Is this even running")
         #Get targets from Bus
         position = position_bus.read()
@@ -330,7 +331,7 @@ class ArmMove():
                     self.AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
                     time.sleep(1.5)
                 time.sleep(0.01)
-    
+            time.sleep(delay)
     def initMove(self):
         Board.setBusServoPulse(1, self.servo1 - 50, 300)
         Board.setBusServoPulse(2, 500, 500)
