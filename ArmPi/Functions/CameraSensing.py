@@ -200,6 +200,10 @@ class ColorSensing():
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
+            print(position_bus.read())
+            print(color_bus.read())
+            print(roi_bus.read())
+            print(start_pickup_bus.read())
             time.sleep(delay)
         self.cleanup()
      
@@ -374,7 +378,7 @@ sensor = ColorSensing()
 arm = ArmMove()
 
 with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
-    #eSensor = executor.submit(sensor.start, pos, color, roia, start, 2)
-    eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
-#eSensor.result()
-eController.result()
+    eSensor = executor.submit(sensor.start, pos, color, roia, start, 2)
+    #eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
+eSensor.result()
+#eController.result()
