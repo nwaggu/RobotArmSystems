@@ -18,12 +18,17 @@ import atexit
 import concurrent.futures
 from readerwriterlock import rwlock
 
-#Global setup 
+#Global setup
+coordinate = {
+    'red':   (-15 + 0.5, 12 - 0.5, 1.5),
+    'green': (-15 + 0.5, 6 - 0.5,  1.5),
+    'blue':  (-15 + 0.5, 0 - 0.5,  1.5),
+} 
 pos = [0,0,0]
 chosenColor = 'None'  
 roia = False 
 start = False
-
+z_r = coordinate['red'][2]
 
 
 class ColorSensing():
@@ -213,7 +218,7 @@ class ColorSensing():
         self.my_camera.camera_close()
         cv2.destroyAllWindows()
     
-    
+        
     def getAreaMaxContour(self, contours):
         contour_area_temp = 0
         contour_area_max = 0
@@ -235,14 +240,112 @@ class ArmMove():
         #Initializing move servos and position
         self.servo1 = 500
         self.AK = ArmIK()
+        self.dz = 2.5
 
-        
         self.unreachable = False 
         atexit.register(self.cleanup)
-    
+
+
+    def colorPalletizing(self):
+        #Get targets from Bus
+        global pos
+        global chosenColor
+        global start
+        global roia
+        global z_r 
+        
+        coordinate = {
+            'red':   (-15 + 0.5, 12 - 0.5, 1.5),
+            'green': (-15 + 0.5, 6 - 0.5,  1.5),
+            'blue':  (-15 + 0.5, 0 - 0.5,  1.5),
+        }
+        
+        while True:    
+            global pos
+            global chosenColor
+            global start
+            global roia
+            global z_r
+            
+            
+            #Get targets from Bus
+            world_X = pos[0]
+            world_Y = pos[1]
+            rotation_angle = pos[2]
+            
+            #Get color from Bus
+            detect_color = chosenColor
+            
+            start_pick_up = start 
+          
+            
+            if detect_color != 'None' and start_pick_up:  
+                self.set_rgb(detect_color)
+                self.setBuzzer(0.1)
+                z = z_r
+                z_r += self.dz
+                if z == 2 * self.dz + coordinate['red'][2]:
+                    z_r = coordinate['red'][2]
+                if z == coordinate['red'][2]:  
+                    move_square = True
+                    time.sleep(3)
+                    move_square = False
+                result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
+                if result == False:
+                    unreachable = True
+                else:
+                    unreachable = False
+                    time.sleep(result[2]/1000)
+
+        
+                    servo2_angle = getAngle(world_X, world_Y, rotation_angle)
+                    Board.setBusServoPulse(1, self.servo1 - 280, 500)  
+                    Board.setBusServoPulse(2, servo2_angle, 500)
+                    time.sleep(0.5)
+
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 2), -90, -90, 0, 1000)  
+                    time.sleep(1.5)
+
+                    Board.setBusServoPulse(1, self.servo1, 500)  
+                    time.sleep(0.8)
+
+                    Board.setBusServoPulse(2, 500, 500)
+                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000) 
+                    time.sleep(1)
+
+                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 1500) 
+                    time.sleep(1.5)
+                                     
+                    servo2_angle = getAngle(coordinate[detect_color][0], coordinate[detect_color][1], -90)
+                    Board.setBusServoPulse(2, servo2_angle, 500)
+                    time.sleep(0.5)
+
+                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z + 3), -90, -90, 0, 500)
+                    time.sleep(0.5)
+                                   
+                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z), -90, -90, 0, 1000)
+                    time.sleep(0.8)
+
+                    Board.setBusServoPulse(1, self.servo1 - 200, 500)  
+                    time.sleep(1)
+
+                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
+                    time.sleep(0.8)
+
+                    self.initMove() 
+                    time.sleep(1.5)
+
+                    detect_color = 'None'
+                    get_roi = False
+                    roia = get_roi
+                    start_pick_up = False
+                    start = start_pick_up
+                    chosenColor = detect_color
+                    self.set_rgb(detect_color)
+
+   
     #Runs color sorting code
     def colorSort(self):
-        print("Is this even running")
         #Get targets from Bus
         global pos
         global chosenColor
@@ -272,14 +375,9 @@ class ArmMove():
             print(chosenColor,start)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
-                print("In IF")
                 self.set_rgb(detect_color)
-                print("set rgb")
                 self.setBuzzer(0.1)
-                print("set buzzer?")
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
-                print("CHECKING REACHABLE???")
-                print(result)
                 if result == False:
                     self.unreachable = True
                 else:
@@ -378,7 +476,7 @@ class ArmMove():
 sensor = ColorSensing()
 arm = ArmMove()
 
-th = threading.Thread(target=arm.colorSort)
+th = threading.Thread(target=arm.colorPalletizing)
 th.setDaemon(True)
 th.start()    
 
