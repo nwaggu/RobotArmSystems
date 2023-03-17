@@ -355,6 +355,7 @@ class ArmMove():
         Board.setBuzzer(0)
     
     def set_rgb(color):
+        print("started fuction? ")
         if color == "red":
             Board.RGB.setPixelColor(0, Board.PixelColor(255, 0, 0))
             Board.RGB.setPixelColor(1, Board.PixelColor(255, 0, 0))
