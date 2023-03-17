@@ -18,19 +18,11 @@ import atexit
 import concurrent.futures
 from readerwriterlock import rwlock
 
-class Bus():
-    def __init__(self, message):
-        self.message = message
-        self.lock = rwlock.RWLockWriteD()
-    
-    def write(self, new_message):
-        with self.lock.gen_wlock():
-            self.message = new_message
-        
-    def read(self):
-        with self.lock.gen_rlock():
-            message = self.message
-        return message
+#Global setup 
+pos = [0,0,0]
+chosenColor = 'None'  
+roia = False 
+start = False
 
 
 
@@ -64,7 +56,10 @@ class ColorSensing():
         self.color_list = []
         
     
-    def processImage(self, img, roi_bus:Bus, start_pickup_bus:Bus):
+    def processImage(self, img):
+        global roia 
+        global start
+        
         img_copy = img.copy()
         img_h, img_w = img.shape[:2]
         cv2.line(img, (0, int(img_h / 2)), (img_w, int(img_h / 2)), (0, 0, 200), 1)
@@ -72,17 +67,18 @@ class ColorSensing():
         frame_resize = cv2.resize(img_copy, self.resolution, interpolation=cv2.INTER_NEAREST)
         frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
         #If a recognized object is detected in an area, the area is detected until there is no
-        self.get_roi = roi_bus.read()
-        start_pickup = start_pickup_bus.read()
+        self.get_roi = roia
+        start_pickup = start
         if self.get_roi and not start_pickup:
             self.get_roi = False
-            roi_bus.write(self.get_roi)
+            roia = self.get_roi
             frame_gb = getMaskROI(frame_gb, self.roi, self.resolution)     
         frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
         return frame_lab
    
         
-    def getMaxValidAreas(self, frame_lab, color_bus):
+    def getMaxValidAreas(self, frame_lab):
+        global chosenColor 
         self.color_area_max = None
         max_area = 0
         area_max = 0
@@ -91,7 +87,7 @@ class ColorSensing():
         for i in color_range:
             if i in self.target_color:
                 self.detect_color = i
-                color_bus.write(self.detect_color)
+                chosenColor = self.detect_color
                 frame_mask = cv2.inRange(frame_lab, color_range[self.detect_color][0], color_range[self.detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
@@ -106,7 +102,7 @@ class ColorSensing():
         return areaMaxContour_max, max_area
     
     
-    def getLocation(self, areaMaxContour_max, max_area, img,position_bus, color_bus, start_pickup_bus ):
+    def getLocation(self, areaMaxContour_max, max_area, img):
         if max_area > 2500:  # Have found the largest area
             self.rect = cv2.minAreaRect(areaMaxContour_max)
             box = np.int0(cv2.boxPoints(self.rect))
@@ -118,7 +114,7 @@ class ColorSensing():
             cv2.drawContours(img, [box], -1, self.range_rgb[self.color_area_max], 2)
             cv2.putText(img, '(' + str(self.world_x) + ',' + str(self.world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.color_area_max], 1) #draw center point
-            self.decisionMaking(position_bus, color_bus, start_pickup_bus)
+            self.decisionMaking()
             #track = True
         return img
     
@@ -135,7 +131,11 @@ class ColorSensing():
         return color
     
     
-    def decisionMaking(self, position_bus:Bus, color_bus:Bus, start_pickup_bus:Bus):
+    def decisionMaking(self):
+        global chosenColor
+        global start
+        global pos
+        
         self.last_x, self.last_y = self.world_x, self.world_y
         distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
             
@@ -155,8 +155,8 @@ class ColorSensing():
                 self.center_list = []
                 self.count = 0
                 self.start_pick_up = True
-                position_bus.write([self.world_X, self.world_Y, self.rotation_angle])
-                start_pickup_bus.write(self.start_pick_up)
+                pos = [self.world_X, self.world_Y, self.rotation_angle]
+                start = self.start_pick_up
         else:
             self.t1 = time.time()
             self.start_count_t1 = True
@@ -170,38 +170,38 @@ class ColorSensing():
             if color == 1:
                 self.detect_color = 'red'
                 self.draw_color = self.range_rgb["red"]
-                color_bus.write(self.detect_color)
+                chosenColor = self.detect_color
             elif color == 2:
                 self.detect_color = 'green'
                 self.draw_color = self.range_rgb["green"]
-                color_bus.write(self.detect_color)
+                chosenColor = self.detect_color
             elif color == 3:
                 self.detect_color = 'blue'
                 self.draw_color = self.range_rgb["blue"]
-                color_bus.write(self.detect_color)
+                chosenColor = self.detect_color
             else:
                 self.detect_color = 'None'
                 self.draw_color = self.range_rgb["black"]
-                color_bus.write(self.detect_color)
+                chosenColor = self.detect_color
         else:
             self.draw_color = (0, 0, 0)
             self.detect_color = "None" 
-            color_bus.write(self.detect_color)
+            chosenColor = self.detect_color
          
     
      
-    def run(self, img, position_bus, color_bus, roi_bus, start_pickup_bus):
-        frame_lab = self.processImage(img, roi_bus, start_pickup_bus)
-        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab, color_bus)
-        return self.getLocation(areaMaxContour, area_max, img, position_bus, color_bus, start_pickup_bus)
+    def run(self, img):
+        frame_lab = self.processImage(img)
+        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
+        return self.getLocation(areaMaxContour, area_max, img)
         
         
-    def start(self, position_bus, color_bus, roi_bus, start_pickup_bus, delay):
+    def start(self, delay):
         while True:
             img = self.my_camera.frame
             if img is not None:
                 frame = img.copy()
-                Frame = self.run(frame, position_bus, color_bus, roi_bus, start_pickup_bus)           
+                Frame = self.run(frame)           
                 cv2.imshow('Frame', Frame)
                 key = cv2.waitKey(1)
                 if key == 27:
@@ -372,16 +372,13 @@ class ArmMove():
             
 
 
-pos = Bus([0,0,0])
-color = Bus('None') 
-roia = Bus(False)  
-start = Bus(False)
+
 
 sensor = ColorSensing()
 arm = ArmMove()
 
 with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
-    eSensor = executor.submit(sensor.start, pos, color, roia, start, 0.05)
-    eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
+    eSensor = executor.submit(sensor.start, 0.05)
+    eController = executor.submit(arm.colorSort, 0.05)
 eSensor.result()
 eController.result()
