@@ -86,7 +86,7 @@ class ColorSensing():
         return areaMaxContour_max, max_area
     
     
-    def getLocation(self, areaMaxContour_max, max_area, img):
+    def getLocation(self, areaMaxContour_max, max_area, img,position_bus, color_bus, start_pickup_bus ):
         if max_area > 2500:  # Have found the largest area
             self.rect = cv2.minAreaRect(areaMaxContour_max)
             box = np.int0(cv2.boxPoints(self.rect))
@@ -98,7 +98,7 @@ class ColorSensing():
             cv2.drawContours(img, [box], -1, self.range_rgb[self.color_area_max], 2)
             cv2.putText(img, '(' + str(self.world_x) + ',' + str(self.world_y) + ')', (min(box[0, 0], box[2, 0]), box[2, 1] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.range_rgb[self.color_area_max], 1) #draw center point
-            self.decisionMaking()
+            self.decisionMaking(position_bus, color_bus, start_pickup_bus)
             #track = True
         return img
     
@@ -166,7 +166,7 @@ class ColorSensing():
     def run(self, img, position_bus, color_bus, roi_bus, start_pickup_bus):
         frame_lab = self.processImage(img, roi_bus, start_pickup_bus)
         areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
-        return self.getLocation(areaMaxContour, area_max, img)
+        return self.getLocation(areaMaxContour, area_max, img, position_bus, color_bus, start_pickup_bus)
         
         
     def start(self, position_bus, color_bus, roi_bus, start_pickup_bus):
