@@ -196,7 +196,7 @@ class ColorSensing():
         return self.getLocation(areaMaxContour, area_max, img)
         
         
-    def start(self, delay):
+    def start(self):
         while True:
             img = self.my_camera.frame
             if img is not None:
@@ -206,7 +206,6 @@ class ColorSensing():
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
-            time.sleep(delay)
         self.cleanup()
      
             
@@ -242,7 +241,7 @@ class ArmMove():
         atexit.register(self.cleanup)
     
     #Runs color sorting code
-    def colorSort(self, delay):
+    def colorSort(self):
         print("Is this even running")
         #Get targets from Bus
         global pos
@@ -331,7 +330,6 @@ class ArmMove():
                     start = start_pick_up
                     chosenColor = detect_color
                     self.set_rgb(detect_color)
-            time.sleep(delay)
             
             
     def initMove(self):
@@ -380,8 +378,8 @@ class ArmMove():
 sensor = ColorSensing()
 arm = ArmMove()
 
-with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
-    eSensor = executor.submit(sensor.start, 0.05)
-    eController = executor.submit(arm.colorSort, 0.05)
-eSensor.result()
-eController.result()
+th = threading.Thread(target=arm.colorSort)
+th.setDaemon(True)
+th.start()    
+
+sensor.start()
