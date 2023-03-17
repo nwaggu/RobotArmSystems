@@ -170,7 +170,7 @@ roia = Bus(False)
 start = Bus(False)
 
 #sensor = ColorSensing()
-arm = ArmMove()
+#arm = ArmMove()
 
 #with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
        # eSensor = executor.submit(sensor.run, pos, color, roia, start, 0.05)
