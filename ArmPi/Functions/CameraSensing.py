@@ -322,16 +322,9 @@ class ArmMove():
                     start_pick_up = False
                     start_pickup_bus.write(start_pick_up)
                     self.set_rgb(detect_color)
-            else:
-                if _stop:
-                    _stop = False
-                    Board.setBusServoPulse(1, self.servo1 - 70, 300)
-                    time.sleep(0.5)
-                    Board.setBusServoPulse(2, 500, 500)
-                    self.AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
-                    time.sleep(1.5)
-                time.sleep(0.01)
             time.sleep(delay)
+            
+            
     def initMove(self):
         Board.setBusServoPulse(1, self.servo1 - 50, 300)
         Board.setBusServoPulse(2, 500, 500)
