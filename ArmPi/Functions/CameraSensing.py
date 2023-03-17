@@ -257,6 +257,10 @@ class ArmMove():
         }
         
         while True:    
+            global pos
+            global chosenColor
+            global start
+            global roia
             #Get targets from Bus
             world_X = pos[0]
             world_Y = pos[1]
@@ -266,9 +270,10 @@ class ArmMove():
             detect_color = chosenColor
             
             start_pick_up = start 
-            
+            print(chosenColor,start)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
+                
                 self.set_rgb(detect_color)
                 self.setBuzzer(0.1)
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
