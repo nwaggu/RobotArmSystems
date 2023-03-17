@@ -375,6 +375,6 @@ arm = ArmMove()
 
 with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
     #eSensor = executor.submit(sensor.start, pos, color, roia, start, 2)
-    eController = executor.submit(arm.colorSort, pos, color, roia, start, 2)
+    eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
 #eSensor.result()
 eController.result()
