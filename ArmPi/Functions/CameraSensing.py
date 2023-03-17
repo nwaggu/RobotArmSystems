@@ -376,7 +376,11 @@ color = Bus('None')
 roia = Bus(False)  
 start = Bus(False)
 
+sensor = ColorSensing()
+arm = ArmMove()
 
-test = ArmMove()
-print("Am i crazy")
-#test.start(position_bus=pos,color_bus=color,roi_bus=roia, start_pickup_bus=start)
+with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
+    eSensor = executor.submit(sensor.run, pos, color, roia, start, 0.05)
+    eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
+eSensor.result()
+eController.result()
