@@ -242,16 +242,13 @@ class ArmMove():
         atexit.register(self.cleanup)
     
     #Runs color sorting code
-    def colorSort(self, position_bus:Bus ,color_bus:Bus,roi_bus:Bus, start_pickup_bus:Bus, delay):
+    def colorSort(self, delay):
         print("Is this even running")
         #Get targets from Bus
-        position = position_bus.read()
-        world_X = position[0]
-        world_Y = position[1]
-        rotation_angle = position[2]
-        
-        #Get color from Bus
-        detect_color = color_bus.read()
+        global pos
+        global chosenColor
+        global start
+        global roia
         
         coordinate = {
             'red':   (-15 + 0.5, 12 - 0.5, 1.5),
@@ -261,25 +258,21 @@ class ArmMove():
         
         while True:    
             #Get targets from Bus
-            position = position_bus.read()
-            world_X = position[0]
-            world_Y = position[1]
-            rotation_angle = position[2]
+            world_X = pos[0]
+            world_Y = pos[1]
+            rotation_angle = pos[2]
             
             #Get color from Bus
-            detect_color = color_bus.read()
+            detect_color = chosenColor
             
+            start_pick_up = start 
             
-            start_pick_up = start_pickup_bus.read()  
-            print(detect_color, start_pick_up)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
-                print("Entered if???")
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
                 self.set_rgb(detect_color)
                 self.setBuzzer(0.1)
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
                 if result == False:
-                    print("Unreachable???")
                     self.unreachable = True
                 else:
                     self.unreachable = False
@@ -324,10 +317,10 @@ class ArmMove():
 
                     detect_color = 'None'
                     get_roi = False
-                    roi_bus.write(get_roi)
+                    roia = get_roi
                     start_pick_up = False
-                    start_pickup_bus.write(start_pick_up)
-                    color_bus.write(detect_color)
+                    start = start_pick_up
+                    chosenColor = detect_color
                     self.set_rgb(detect_color)
             time.sleep(delay)
             
