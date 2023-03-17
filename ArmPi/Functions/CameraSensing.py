@@ -82,7 +82,7 @@ class ColorSensing():
         return frame_lab
    
         
-    def getMaxValidAreas(self, frame_lab):
+    def getMaxValidAreas(self, frame_lab, color_bus):
         self.color_area_max = None
         max_area = 0
         area_max = 0
@@ -91,6 +91,7 @@ class ColorSensing():
         for i in color_range:
             if i in self.target_color:
                 self.detect_color = i
+                color_bus.write(self.detect_color)
                 frame_mask = cv2.inRange(frame_lab, color_range[self.detect_color][0], color_range[self.detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
@@ -169,24 +170,29 @@ class ColorSensing():
             if color == 1:
                 self.detect_color = 'red'
                 self.draw_color = self.range_rgb["red"]
+                color_bus.write(self.detect_color)
             elif color == 2:
                 self.detect_color = 'green'
                 self.draw_color = self.range_rgb["green"]
+                color_bus.write(self.detect_color)
             elif color == 3:
                 self.detect_color = 'blue'
                 self.draw_color = self.range_rgb["blue"]
+                color_bus.write(self.detect_color)
             else:
                 self.detect_color = 'None'
                 self.draw_color = self.range_rgb["black"]
+                color_bus.write(self.detect_color)
         else:
             self.draw_color = (0, 0, 0)
             self.detect_color = "None" 
-        color_bus.write(self.detect_color) 
+            color_bus.write(self.detect_color)
+         
     
      
     def run(self, img, position_bus, color_bus, roi_bus, start_pickup_bus):
         frame_lab = self.processImage(img, roi_bus, start_pickup_bus)
-        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
+        areaMaxContour, area_max = self.getMaxValidAreas(frame_lab, color_bus)
         return self.getLocation(areaMaxContour, area_max, img, position_bus, color_bus, start_pickup_bus)
         
         
@@ -265,7 +271,7 @@ class ArmMove():
             
             
             start_pick_up = start_pickup_bus.read()  
-            print(detect_color)
+            print(detect_color, start_pick_up)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
                 print("Entered if???")
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
@@ -321,6 +327,7 @@ class ArmMove():
                     roi_bus.write(get_roi)
                     start_pick_up = False
                     start_pickup_bus.write(start_pick_up)
+                    color_bus.write(detect_color)
                     self.set_rgb(detect_color)
             time.sleep(delay)
             
