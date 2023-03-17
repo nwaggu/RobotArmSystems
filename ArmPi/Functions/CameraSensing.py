@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 # coding=utf8
+from ArmMove import ArmMove
+from concurrency import Bus
 import sys
 sys.path.append('/home/pi/ArmPi/')
 import cv2
@@ -12,8 +14,8 @@ from ArmIK.ArmMoveIK import *
 import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 import atexit
-from concurrency import Bus
-from ArmMove import ArmMove
+
+
 
 
 class ColorSensing():
