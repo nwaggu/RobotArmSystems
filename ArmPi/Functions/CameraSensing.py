@@ -275,7 +275,9 @@ class ArmMove():
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
                 print("In IF")
                 self.set_rgb(detect_color)
+                print("set rgb")
                 self.setBuzzer(0.1)
+                print("set buzzer?")
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
                 print("CHECKING REACHABLE???")
                 print(result)
