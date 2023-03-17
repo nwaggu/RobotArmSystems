@@ -112,7 +112,7 @@ class ColorSensing():
         else:
             color = 0
         return color
-    def decisionMaking(self, position_bus:Bus, color_bus:Bus, roi_bus, start_pickup_bus):
+    def decisionMaking(self, position_bus:Bus, color_bus:Bus, start_pickup_bus:Bus):
         self.last_x, self.last_y = self.world_x, self.world_y
         distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
             
