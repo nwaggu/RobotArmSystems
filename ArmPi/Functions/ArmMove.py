@@ -51,9 +51,11 @@ class ArmMove():
             world_X = position[0]
             world_Y = position[1]
             rotation_angle = position[2]
+            print(position)
             
             #Get color from Bus
             detect_color = color_bus.read()
+            print(detect_color)
             
             start_pick_up = start_pickup_bus.read()  
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
@@ -62,6 +64,7 @@ class ArmMove():
                 self.setBuzzer(0.1)
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
                 if result == False:
+                    print("Unreachable???")
                     self.unreachable = True
                 else:
                     self.unreachable = False
