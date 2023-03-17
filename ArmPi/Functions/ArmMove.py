@@ -136,7 +136,7 @@ class ArmMove():
         Board.setBusServoPulse(2, 500, 500)
         self.AK.setPitchRangeMoving((0, 10, 10), -30, -30, -90, 1500)
         time.sleep(1.5)
-    time.sleep(0.01)
+    #time.sleep(0.01)
     
     def setBuzzer(timer):
         Board.setBuzzer(0)
@@ -169,14 +169,15 @@ color = Bus('None')
 roia = Bus(False)  
 start = Bus(False)
 
-sensor = ColorSensing()
+#sensor = ColorSensing()
 arm = ArmMove()
 
-with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
+#with concurrent.futures.ThreadPoolExecutor(max_workers =2) as executor:
        # eSensor = executor.submit(sensor.run, pos, color, roia, start, 0.05)
-        eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
+#        eController = executor.submit(arm.colorSort, pos, color, roia, start, 0.05)
 #eSensor.result()
-eController.result()
+#eController.result()
+print("????????")
 
 
 
