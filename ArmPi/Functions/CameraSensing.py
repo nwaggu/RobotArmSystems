@@ -200,10 +200,6 @@ class ColorSensing():
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
-            print(position_bus.read())
-            print(color_bus.read())
-            print(roi_bus.read())
-            print(start_pickup_bus.read())
             time.sleep(delay)
         self.cleanup()
      
@@ -251,7 +247,6 @@ class ArmMove():
         #Get color from Bus
         detect_color = color_bus.read()
         
-        start_pick_up = start_pickup_bus.read()
         coordinate = {
             'red':   (-15 + 0.5, 12 - 0.5, 1.5),
             'green': (-15 + 0.5, 6 - 0.5,  1.5),
@@ -264,14 +259,15 @@ class ArmMove():
             world_X = position[0]
             world_Y = position[1]
             rotation_angle = position[2]
-            print(position)
             
             #Get color from Bus
             detect_color = color_bus.read()
-            print(detect_color)
+            
             
             start_pick_up = start_pickup_bus.read()  
+            print(detect_color)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
+                print("Entered if???")
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
                 self.set_rgb(detect_color)
                 self.setBuzzer(0.1)
