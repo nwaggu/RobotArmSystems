@@ -346,13 +346,13 @@ class ArmMove():
         time.sleep(1.5)
     #time.sleep(0.01)
     
-    def setBuzzer(timer):
+    def setBuzzer(self, timer):
         Board.setBuzzer(0)
         Board.setBuzzer(1)
         time.sleep(timer)
         Board.setBuzzer(0)
     
-    def set_rgb(color):
+    def set_rgb(self, color):
         print("started fuction? ")
         if color == "red":
             Board.RGB.setPixelColor(0, Board.PixelColor(255, 0, 0))
