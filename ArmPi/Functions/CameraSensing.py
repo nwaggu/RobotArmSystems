@@ -44,8 +44,7 @@ class ColorSensing():
         }
         self.color_list = []
         
-        
-
+    
     def processImage(self, img, roi_bus:Bus, start_pickup_bus:Bus):
         img_copy = img.copy()
         img_h, img_w = img.shape[:2]
@@ -62,6 +61,7 @@ class ColorSensing():
             frame_gb = getMaskROI(frame_gb, self.roi, self.resolution)     
         frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
         return frame_lab
+   
         
     def getMaxValidAreas(self, frame_lab):
         self.color_area_max = None
@@ -102,6 +102,7 @@ class ColorSensing():
             #track = True
         return img
     
+    
     def main_color(self):
         if self.color_area_max == 'red':  #红色最大
             color = 1
@@ -112,6 +113,8 @@ class ColorSensing():
         else:
             color = 0
         return color
+    
+    
     def decisionMaking(self, position_bus:Bus, color_bus:Bus, start_pickup_bus:Bus):
         self.last_x, self.last_y = self.world_x, self.world_y
         distance = math.sqrt(pow(self.world_x - self.last_x, 2) + pow(self.world_y - self.last_y, 2)) #Compare the last coordinates to determine whether to move
@@ -161,8 +164,7 @@ class ColorSensing():
             self.detect_color = "None" 
         color_bus.write(self.detect_color) 
     
-    
-      
+     
     def run(self, img, position_bus, color_bus, roi_bus, start_pickup_bus):
         frame_lab = self.processImage(img, roi_bus, start_pickup_bus)
         areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
@@ -180,6 +182,7 @@ class ColorSensing():
                 if key == 27:
                     break
         self.cleanup()
+     
             
     def cleanup(self):  
         self.my_camera.camera_close()
@@ -202,7 +205,7 @@ class ColorSensing():
 
 
 pos = Bus([0,0,0])
-color = Bus(None) 
+color = Bus('None') 
 roia = Bus(False)  
 start = Bus(False)
 test = ColorSensing()
