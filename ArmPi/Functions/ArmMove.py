@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # coding=utf8
+from CameraSensing import ColorSensing
 import sys
 sys.path.append('/home/pi/ArmPi/')
 import cv2
@@ -13,7 +14,7 @@ import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 import atexit
 from concurrency import Bus
-from CameraSensing import ColorSensing
+
 import concurrent.futures
 
 class ArmMove():
