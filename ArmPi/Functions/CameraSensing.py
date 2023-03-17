@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # coding=utf8
-from ArmMove import ArmMove
+import ArmMove as arm
 from concurrency import Bus
 import sys
 sys.path.append('/home/pi/ArmPi/')
@@ -213,6 +213,6 @@ roia = Bus(False)
 start = Bus(False)
 
 
-test = ArmMove()
+test = arm.ArmMove()
 print("Am i crazy")
 #test.start(position_bus=pos,color_bus=color,roi_bus=roia, start_pickup_bus=start)
