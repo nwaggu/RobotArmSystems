@@ -45,7 +45,17 @@ class ArmMove():
             'blue':  (-15 + 0.5, 0 - 0.5,  1.5),
         }
         
-        while True:      
+        while True:    
+            #Get targets from Bus
+            position = position_bus.read()
+            world_X = position[0]
+            world_Y = position[1]
+            rotation_angle = position[2]
+            
+            #Get color from Bus
+            detect_color = color_bus.read()
+            
+            start_pick_up = start_pickup_bus.read()  
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
                 self.set_rgb(detect_color)
