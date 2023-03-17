@@ -13,6 +13,7 @@ import HiwonderSDK.Board as Board
 from CameraCalibration.CalibrationConfig import *
 import atexit
 from concurrency import Bus
+from ArmMove import ArmMove
 
 
 class ColorSensing():
@@ -208,5 +209,8 @@ pos = Bus([0,0,0])
 color = Bus('None') 
 roia = Bus(False)  
 start = Bus(False)
-test = ColorSensing()
-test.start(position_bus=pos,color_bus=color,roi_bus=roia, start_pickup_bus=start)
+
+
+test = ArmMove()
+print("Am i crazy")
+#test.start(position_bus=pos,color_bus=color,roi_bus=roia, start_pickup_bus=start)
