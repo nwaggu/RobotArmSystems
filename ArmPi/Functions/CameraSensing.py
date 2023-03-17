@@ -273,10 +273,12 @@ class ArmMove():
             print(chosenColor,start)
             if detect_color != 'None' and start_pick_up:  #If it detects that the block has not moved for a while, start gripping 
                 #If no runtime parameter is given, it is automatically calculated and returned by the result
-                
+                print("In IF")
                 self.set_rgb(detect_color)
                 self.setBuzzer(0.1)
                 result = self.AK.setPitchRangeMoving((world_X, world_Y, 7), -90, -90, 0)  
+                print("CHECKING REACHABLE???")
+                print(result)
                 if result == False:
                     self.unreachable = True
                 else:
