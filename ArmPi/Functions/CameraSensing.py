@@ -377,6 +377,6 @@ roia = Bus(False)
 start = Bus(False)
 
 
-test = arm.ArmMove()
+test = ArmMove()
 print("Am i crazy")
 #test.start(position_bus=pos,color_bus=color,roi_bus=roia, start_pickup_bus=start)
