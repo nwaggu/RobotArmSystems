@@ -40,7 +40,9 @@ class ColorSensing():
         self.t1 = 0
         #Camera setup
         self.my_camera = Camera.Camera()
-        self.my_camera.camera_open()
+        self.second_camera = Camera.Camera()
+        self.my_camera.camera_open(0)
+        self.second_camera.camera_open(2)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -194,7 +196,6 @@ class ColorSensing():
             chosenColor = self.detect_color
          
     
-     
     def run(self, img):
         frame_lab = self.processImage(img)
         areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
@@ -204,10 +205,12 @@ class ColorSensing():
     def start(self):
         while True:
             img = self.my_camera.frame
+            second_img = self.second_camera.frame
             if img is not None:
                 frame = img.copy()
                 Frame = self.run(frame)           
-                cv2.imshow('Frame', Frame)
+                cv2.imshow('Top', Frame)
+                cv2.imshow('Not Top', second_img)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
@@ -224,14 +227,14 @@ class ColorSensing():
         contour_area_max = 0
         area_max_contour = None
 
-        for c in contours:  # 历遍所有轮廓
-            contour_area_temp = math.fabs(cv2.contourArea(c))  # 计算轮廓面积
+        for c in contours: 
+            contour_area_temp = math.fabs(cv2.contourArea(c))  
             if contour_area_temp > contour_area_max:
                 contour_area_max = contour_area_temp
-                if contour_area_temp > 300:  # 只有在面积大于300时，最大面积的轮廓才是有效的，以过滤干扰
+                if contour_area_temp > 300:  
                     area_max_contour = c
 
-        return area_max_contour, contour_area_max  # 返回最大的轮廓
+        return area_max_contour, contour_area_max 
 
 
 class ArmMove():
