@@ -206,13 +206,15 @@ class ColorSensing():
         while True:
             img = self.my_camera.frame
             second_img = self.second_camera.frame
+            print(second_img.shape())
             frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
-            frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
-            if img is not None:
+            #frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
+            if img is not None and second_img is not None:
                 frame = img.copy()
                 Frame = self.run(frame)           
                 cv2.imshow('Top', Frame)
-                cv2.imshow('Bottom', frame_gb)
+
+                cv2.imshow('Bottom', frame_resize)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
