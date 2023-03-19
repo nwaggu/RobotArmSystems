@@ -42,7 +42,7 @@ class ColorSensing():
         self.my_camera = Camera.Camera()
         self.second_camera = Camera.Camera()
         self.my_camera.camera_open(0)
-        self.second_camera.camera_open(1)
+        self.second_camera.camera_open(2)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -206,10 +206,11 @@ class ColorSensing():
         while True:
             img = self.my_camera.frame
             second_img = self.second_camera.frame
-            print(second_img.shape)
-            frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
+            #print(img.shape)
+            
             #frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
             if img is not None and second_img is not None:
+                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
                 frame = img.copy()
                 Frame = self.run(frame)           
                 cv2.imshow('Top', Frame)
