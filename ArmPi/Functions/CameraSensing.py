@@ -42,7 +42,7 @@ class ColorSensing():
         self.my_camera = Camera.Camera()
         self.second_camera = Camera.Camera()
         self.my_camera.camera_open(0)
-        self.second_camera.camera_open(2)
+        self.second_camera.camera_open(3)
         atexit.register(self.cleanup)
         
         #Size of camera view
