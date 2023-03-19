@@ -210,7 +210,7 @@ class ColorSensing():
                 frame = img.copy()
                 Frame = self.run(frame)           
                 cv2.imshow('Top', Frame)
-                cv2.imshow('Bottom', second_img)
+                #cv2.imshow('Bottom', second_img)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
