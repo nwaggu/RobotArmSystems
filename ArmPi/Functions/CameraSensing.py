@@ -275,11 +275,9 @@ class ArmMove():
             global roia
             global z_r
             
-            
             #Get targets from Bus
             world_X = pos[0]
             world_Y = pos[1]
-            rotation_angle = pos[2]
             
             #Get color from Bus
             detect_color = chosenColor
@@ -305,40 +303,9 @@ class ArmMove():
                     unreachable = False
                     time.sleep(result[2]/1000)
 
-        
-                    servo2_angle = getAngle(world_X, world_Y, rotation_angle)
-                    Board.setBusServoPulse(1, self.servo1 - 280, 500)  
-                    Board.setBusServoPulse(2, servo2_angle, 500)
-                    time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 2), -90, -90, 0, 1000)  
-                    time.sleep(1.5)
-
-                    Board.setBusServoPulse(1, self.servo1, 500)  
-                    time.sleep(0.8)
-
-                    Board.setBusServoPulse(2, 500, 500)
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000) 
-                    time.sleep(1)
-
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 1500) 
-                    time.sleep(1.5)
-                                     
-                    servo2_angle = getAngle(coordinate[detect_color][0], coordinate[detect_color][1], -90)
-                    Board.setBusServoPulse(2, servo2_angle, 500)
-                    time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z + 3), -90, -90, 0, 500)
-                    time.sleep(0.5)
-                                   
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z), -90, -90, 0, 1000)
-                    time.sleep(0.8)
-
-                    Board.setBusServoPulse(1, self.servo1 - 200, 500)  
-                    time.sleep(1)
-
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
-                    time.sleep(0.8)
+                    self.pickUp()
+                    
+                    self.dropOffStack(z)
 
                     self.initMove() 
                     time.sleep(1.5)
@@ -351,7 +318,79 @@ class ArmMove():
                     chosenColor = detect_color
                     self.set_rgb(detect_color)
 
+
+    #Picks up the cube
+    def pickUp(self):
+        global pos
+        world_X = pos[0]
+        world_Y = pos[1]
+        rotation_angle = pos[2]
+        
+        servo2_angle = getAngle(world_X, world_Y, rotation_angle) 
+        Board.setBusServoPulse(1, self.servo1 - 280, 500)  
+        Board.setBusServoPulse(2, servo2_angle, 500)
+        time.sleep(0.5)
+
+        self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
+        time.sleep(1.5)
+
+        Board.setBusServoPulse(1, self.servo1, 500)  
+        time.sleep(0.8)
+
+        Board.setBusServoPulse(2, 500, 500)
+        self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  
+        time.sleep(0.5)
+        
+     #Drops off cube   
+    
+    #Drop off cube
+    def dropOff(self):
+        global chosenColor
+        detect_color = chosenColor
+        
+        result = self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0)   
+        time.sleep(result[2]/1000)
+                            
+        servo2_angle = getAngle(coordinate[detect_color][0], coordinate[detect_color][1], -90)
+        Board.setBusServoPulse(2, servo2_angle, 500)
+        time.sleep(0.5)
+
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], coordinate[detect_color][2] + 3), -90, -90, 0, 500)
+        time.sleep(0.5)
+                            
+        self.AK.setPitchRangeMoving((coordinate[detect_color]), -90, -90, 0, 1000)
+        time.sleep(0.8)
+
+        Board.setBusServoPulse(1, self.servo1 - 200, 500)  #Open gripper
+        time.sleep(0.8)
+
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
+        time.sleep(0.8)
    
+    #Drop Off in Stack
+    def dropOffStack(self, z):
+        global chosenColor
+        detect_color = chosenColor
+        
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 1500) 
+        time.sleep(1.5)
+                            
+        servo2_angle = getAngle(coordinate[detect_color][0], coordinate[detect_color][1], -90)
+        Board.setBusServoPulse(2, servo2_angle, 500)
+        time.sleep(0.5)
+
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z + 3), -90, -90, 0, 500)
+        time.sleep(0.5)
+                        
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], z), -90, -90, 0, 1000)
+        time.sleep(0.8)
+
+        Board.setBusServoPulse(1, self.servo1 - 200, 500)  
+        time.sleep(1)
+
+        self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
+        time.sleep(0.8)
+
     #Runs color sorting code
     def colorSort(self):
         #Get targets from Bus
@@ -392,41 +431,12 @@ class ArmMove():
                     self.unreachable = False
                     time.sleep(result[2]/1000) #If the specified location can be reached, get the running time
 
-                    servo2_angle = getAngle(world_X, world_Y, rotation_angle) #计算夹持器需要旋转的角度
-                    Board.setBusServoPulse(1, self.servo1 - 280, 500)  # 爪子张开
-                    Board.setBusServoPulse(2, servo2_angle, 500)
-                    time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
-                    time.sleep(1.5)
-
-                    Board.setBusServoPulse(1, self.servo1, 500)  #夹持器闭合
-                    time.sleep(0.8)
-
-                    Board.setBusServoPulse(2, 500, 500)
-                    self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  #机械臂抬起
-                    time.sleep(5)
-
-                    result = self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0)   
-                    time.sleep(result[2]/1000)
-                                      
-                    servo2_angle = getAngle(coordinate[detect_color][0], coordinate[detect_color][1], -90)
-                    Board.setBusServoPulse(2, servo2_angle, 500)
-                    time.sleep(0.5)
-
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], coordinate[detect_color][2] + 3), -90, -90, 0, 500)
-                    time.sleep(0.5)
-                                       
-                    self.AK.setPitchRangeMoving((coordinate[detect_color]), -90, -90, 0, 1000)
-                    time.sleep(0.8)
-
-                    Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开  ，放下物体
-                    time.sleep(5)
-
-                    self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
-                    time.sleep(0.8)
-
-                    self.initMove()  # 回到初始位置
+                    self.pickUp()
+                    
+                    self.dropOff()
+                    
+                    self.initMove()
+                      
                     time.sleep(1.5)
 
                     detect_color = 'None'
