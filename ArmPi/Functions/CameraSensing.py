@@ -42,7 +42,7 @@ class ColorSensing():
         self.my_camera = Camera.Camera()
         self.second_camera = Camera.Camera()
         self.my_camera.camera_open(0)
-        self.second_camera.camera_open(2)
+        self.second_camera.camera_open(4)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -210,7 +210,7 @@ class ColorSensing():
                 frame = img.copy()
                 Frame = self.run(frame)           
                 cv2.imshow('Top', Frame)
-                cv2.imshow('Not Top', second_img)
+                cv2.imshow('Bottom', second_img)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
