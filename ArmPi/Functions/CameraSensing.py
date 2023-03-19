@@ -41,8 +41,8 @@ class ColorSensing():
         #Camera setup
         self.my_camera = Camera.Camera()
         self.second_camera = Camera.Camera()
-        self.my_camera.camera_open(0)
-        self.second_camera.camera_open(2)
+        self.my_camera.camera_open(2)
+        self.second_camera.camera_open(0)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -253,7 +253,7 @@ class ArmMove():
         self.unreachable = False 
         atexit.register(self.cleanup)
 
-    #Runs color palateizing
+
     def colorPalletizing(self):
         #Get targets from Bus
         global pos
@@ -398,16 +398,14 @@ class ArmMove():
                     time.sleep(0.5)
 
                     self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
-                    time.sleep(5)
+                    time.sleep(1.5)
 
-                    
-                    
                     Board.setBusServoPulse(1, self.servo1, 500)  #夹持器闭合
                     time.sleep(0.8)
 
                     Board.setBusServoPulse(2, 500, 500)
                     self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  #机械臂抬起
-                    time.sleep(1)
+                    time.sleep(5)
 
                     result = self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0)   
                     time.sleep(result[2]/1000)
@@ -420,15 +418,15 @@ class ArmMove():
                     time.sleep(0.5)
                                        
                     self.AK.setPitchRangeMoving((coordinate[detect_color]), -90, -90, 0, 1000)
-                    time.sleep(5)
+                    time.sleep(0.8)
 
                     Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开  ，放下物体
-                    time.sleep(0.8)
+                    time.sleep(5)
 
                     self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
                     time.sleep(0.8)
 
-                    self.initMove()  # Move to default position
+                    self.initMove()  # 回到初始位置
                     time.sleep(1.5)
 
                     detect_color = 'None'
@@ -486,7 +484,7 @@ class ArmMove():
 sensor = ColorSensing()
 arm = ArmMove()
 
-th = threading.Thread(target=arm.colorPalletizing)
+th = threading.Thread(target=arm.colorSort)
 th.setDaemon(True)
 th.start()    
 
