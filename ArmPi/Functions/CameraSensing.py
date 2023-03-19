@@ -253,7 +253,7 @@ class ArmMove():
         self.unreachable = False 
         atexit.register(self.cleanup)
 
-
+    #Runs color palateizing
     def colorPalletizing(self):
         #Get targets from Bus
         global pos
@@ -398,8 +398,10 @@ class ArmMove():
                     time.sleep(0.5)
 
                     self.AK.setPitchRangeMoving((world_X, world_Y, 1.5), -90, -90, 0, 1000)
-                    time.sleep(1.5)
+                    time.sleep(5)
 
+                    
+                    
                     Board.setBusServoPulse(1, self.servo1, 500)  #夹持器闭合
                     time.sleep(0.8)
 
@@ -418,7 +420,7 @@ class ArmMove():
                     time.sleep(0.5)
                                        
                     self.AK.setPitchRangeMoving((coordinate[detect_color]), -90, -90, 0, 1000)
-                    time.sleep(0.8)
+                    time.sleep(5)
 
                     Board.setBusServoPulse(1, self.servo1 - 200, 500)  # 爪子张开  ，放下物体
                     time.sleep(0.8)
@@ -426,7 +428,7 @@ class ArmMove():
                     self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 800)
                     time.sleep(0.8)
 
-                    self.initMove()  # 回到初始位置
+                    self.initMove()  # Move to default position
                     time.sleep(1.5)
 
                     detect_color = 'None'
