@@ -95,7 +95,7 @@ class ColorSensing():
         for i in color_range:
             if i in self.target_color:
                 self.detect_color = i
-                chosenColor = self.detect_color
+                #chosenColor = self.detect_color
                 frame_mask = cv2.inRange(frame_lab, color_range[self.detect_color][0], color_range[self.detect_color][1])  #Perform bitwise operations on original image and mask
                 opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
                 closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
@@ -149,7 +149,12 @@ class ColorSensing():
             
         color = self.main_color()
         self.color_list.append(color)
+<<<<<<< HEAD
         print(self.color_list)
+=======
+        chosenColor = self.color_area_max
+
+>>>>>>> 216f9c2e2d0f08d022252cb51fdc3f189b49be44
         if distance < 0.5:
             self.count += 1
             self.center_list.extend((self.world_x, self.world_y))
@@ -165,6 +170,7 @@ class ColorSensing():
                 self.start_pick_up = True
                 pos = [self.world_X, self.world_Y, self.rotation_angle]
                 start = self.start_pick_up
+                self.draw_color = self.detect_color
         else:
             self.t1 = time.time()
             self.start_count_t1 = True
@@ -498,6 +504,7 @@ class ArmMove():
 
 sensor = ColorSensing()
 arm = ArmMove()
+<<<<<<< HEAD
 print("starting threads")
 #th = threading.Thread(target=sensor.secondCamera())
 v = threading.Thread(target = sensor.start())
@@ -507,4 +514,11 @@ for i in s:
     i.setDaemon(True)
     i.start()
 print("Calling")
+=======
+
+#th = threading.Thread(target=arm.colorSort)
+#th.setDaemon(True)
+#th.start()    
+
+>>>>>>> 216f9c2e2d0f08d022252cb51fdc3f189b49be44
 sensor.start()
