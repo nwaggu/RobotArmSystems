@@ -43,7 +43,7 @@ class ColorSensing():
         self.my_camera = Camera.Camera()
         self.second_camera = Camera.Camera()
         self.my_camera.camera_open(2)
-        self.second_camera.camera_open(2)
+        self.second_camera.camera_open(0)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -279,21 +279,9 @@ class ColorSensing():
                 if key == 27:
                     break
             if second_img is not None:
-                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
-                Frame = self.run(frame_resize)           
-                cv2.imshow('Bot', Frame)
-                key = cv2.waitKey(1)
-                if key == 27:
-                    break
-        self.cleanup()
-
-    def second_start(self):
-        while True:
-            img = self.second_camera.frame
-            if img is not None:
-                frame_resize = cv2.resize(img, self.resolution, interpolation=cv2.INTER_NEAREST)
-                Frame = self.run(frame_resize)           
-                cv2.imshow('Bot', Frame)
+                copy = second_img.copy()
+                lrame = self.runAlt(copy)           
+                cv2.imshow('Bot', lrame)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
@@ -565,12 +553,11 @@ class ArmMove():
 
 
 
-sensor = ColorSensing(2)
-second_sensor = ColorSensing(0)
+sensor = ColorSensing()
 arm = ArmMove()
 
-th = threading.Thread(target=second_sensor.second_start)
-#th.setDaemon(True)
-#th.start()    
+th = threading.Thread(target=arm.colorSort)
+th.setDaemon(True)
+th.start()    
 
 sensor.start()
