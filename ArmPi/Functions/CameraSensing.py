@@ -34,14 +34,16 @@ started_threads = False
 
 class ColorSensing():
 
-    def __init__(self, port):
+    def __init__(self):
         self.count = 0
         self.center_list = []
         self.start_count_t1 = True
         self.t1 = 0
         #Camera setup
         self.my_camera = Camera.Camera()
-        self.my_camera.camera_open(port)
+        self.second_camera = Camera.Camera()
+        self.my_camera.camera_open(2)
+        self.second_camera.camera_open(2)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -81,7 +83,17 @@ class ColorSensing():
             frame_gb = getMaskROI(frame_gb, self.roi, self.resolution)     
         frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
         return frame_lab
-   
+
+    def processImageNoGlobals(self, img):
+        img_copy = img.copy()
+        img_h, img_w = img.shape[:2]
+        cv2.line(img, (0, int(img_h / 2)), (img_w, int(img_h / 2)), (0, 0, 200), 1)
+        cv2.line(img, (int(img_w / 2), 0), (int(img_w / 2), img_h), (0, 0, 200), 1)
+        frame_resize = cv2.resize(img_copy, self.resolution, interpolation=cv2.INTER_NEAREST)
+        frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
+        #If a recognized object is detected in an area, the area is detected until there is no
+        frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  # Convert image to LAB space
+        return frame_lab 
         
     def getMaxValidAreas(self, frame_lab):
         global chosenColor 
@@ -107,6 +119,28 @@ class ColorSensing():
                    
         return areaMaxContour_max, max_area
     
+    def getMaxNoGlobals(self, frame_lab):
+        self.color_area_max_2 = None
+        max_area = 0
+        area_max = 0
+        areaMaxContour = 0
+        areaMaxContour_max = 0
+        for i in color_range:
+            if i in self.target_color:
+                self.detect_color_2 = i
+                frame_mask = cv2.inRange(frame_lab, color_range[self.detect_color_2][0], color_range[self.detect_color_2][1])  #Perform bitwise operations on original image and mask
+                opened = cv2.morphologyEx(frame_mask, cv2.MORPH_OPEN, np.ones((6, 6), np.uint8))  # Open operation
+                closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, np.ones((6, 6), np.uint8))  # Close operation
+                contours = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  #Find the outline
+                areaMaxContour, area_max = self.getAreaMaxContour(contours)  # Find the largest contour
+                if areaMaxContour is not None:
+                    if area_max > max_area:#find the largest area
+                        max_area = area_max
+                        self.color_area_max_2 = i
+                        areaMaxContour_max = areaMaxContour          
+        return areaMaxContour_max, max_area       
+    
+    
     
     def getLocation(self, areaMaxContour_max, max_area, img):
         if max_area > 2500:  # Have found the largest area
@@ -124,6 +158,17 @@ class ColorSensing():
             #track = True
         return img
     
+    def getLocNoGlobals(self,areaMaxContour_max, max_area, img):
+        if max_area > 2500:  # Have found the largest area
+            rect = cv2.minAreaRect(areaMaxContour_max)
+            box = np.int0(cv2.boxPoints(rect))
+            roi = getROI(box) #Get roi area
+            get_roi = True
+            cv2.drawContours(img, [box], -1, self.range_rgb[self.color_area_max_2], 2)
+            self.decisionMakingAlt()
+            #track = True
+        return img    
+    
     
     def main_color(self):
         if self.color_area_max == 'red':  #红色最大
@@ -136,6 +181,21 @@ class ColorSensing():
             color = 0
         return color
     
+    def main_color_alt(self):
+        if self.color_area_max_2 == 'red':  #红色最大
+            color = 1
+        elif self.color_area_max_2 == 'green':  #绿色最大
+            color = 2
+        elif self.color_area_max_2 == 'blue':  #蓝色最大
+            color = 3
+        else:
+            color = 0
+        return color
+    
+    def decisionMakingAlt(self):
+
+        print(self.color_area_max_2)
+  
     
     def decisionMaking(self):
         global chosenColor
@@ -201,11 +261,16 @@ class ColorSensing():
         frame_lab = self.processImage(img)
         areaMaxContour, area_max = self.getMaxValidAreas(frame_lab)
         return self.getLocation(areaMaxContour, area_max, img)
-        
+    
+    def runAlt(self, img):
+        frame_lab = self.processImageNoGlobals(img)
+        areaMaxContour, area_max = self.getMaxNoGlobals(frame_lab)
+        return self.getLocNoGlobals(areaMaxContour, area_max, img)
         
     def start(self):
         while True:
             img = self.my_camera.frame
+            second_img = self.second_camera.frame
             if img is not None:
                 frame = img.copy()
                 Frame = self.run(frame)           
@@ -213,11 +278,18 @@ class ColorSensing():
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
+            if second_img is not None:
+                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
+                Frame = self.run(frame_resize)           
+                cv2.imshow('Bot', Frame)
+                key = cv2.waitKey(1)
+                if key == 27:
+                    break
         self.cleanup()
 
     def second_start(self):
         while True:
-            img = self.my_camera.frame
+            img = self.second_camera.frame
             if img is not None:
                 frame_resize = cv2.resize(img, self.resolution, interpolation=cv2.INTER_NEAREST)
                 Frame = self.run(frame_resize)           
@@ -229,6 +301,7 @@ class ColorSensing():
             
     def cleanup(self):  
         self.my_camera.camera_close()
+        self.second_camera.camera_close()
         cv2.destroyAllWindows()
     
         
@@ -327,6 +400,7 @@ class ArmMove():
     #Picks up the cube
     def pickUp(self):
         global pos
+        color = chosenColor
         world_X = pos[0]
         world_Y = pos[1]
         rotation_angle = pos[2]
@@ -345,13 +419,10 @@ class ArmMove():
         Board.setBusServoPulse(2, 500, 500)
         self.AK.setPitchRangeMoving((world_X, world_Y, 12), -90, -90, 0, 1000)  
         time.sleep(0.5)
-        
      #Drops off cube   
     
     #Drop off cube
-    def dropOff(self):
-        global chosenColor
-        detect_color = chosenColor
+    def dropOff(self, detect_color):
         
         result = self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0)   
         time.sleep(result[2]/1000)
@@ -373,9 +444,7 @@ class ArmMove():
         time.sleep(0.8)
    
     #Drop Off in Stack
-    def dropOffStack(self, z):
-        global chosenColor
-        detect_color = chosenColor
+    def dropOffStack(self, z, detect_color):
         
         self.AK.setPitchRangeMoving((coordinate[detect_color][0], coordinate[detect_color][1], 12), -90, -90, 0, 1500) 
         time.sleep(1.5)
@@ -438,7 +507,7 @@ class ArmMove():
 
                     self.pickUp()
                     
-                    self.dropOff()
+                    self.dropOff(detect_color)
                     
                     self.initMove()
                       
