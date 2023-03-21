@@ -34,16 +34,14 @@ started_threads = False
 
 class ColorSensing():
 
-    def __init__(self):
+    def __init__(self, port):
         self.count = 0
         self.center_list = []
         self.start_count_t1 = True
         self.t1 = 0
         #Camera setup
         self.my_camera = Camera.Camera()
-        self.second_camera = Camera.Camera()
-        self.my_camera.camera_open(2)
-        self.second_camera.camera_open(0)
+        self.my_camera.camera_open(port)
         atexit.register(self.cleanup)
         
         #Size of camera view
@@ -149,12 +147,8 @@ class ColorSensing():
             
         color = self.main_color()
         self.color_list.append(color)
-<<<<<<< HEAD
-        print(self.color_list)
-=======
         chosenColor = self.color_area_max
 
->>>>>>> 216f9c2e2d0f08d022252cb51fdc3f189b49be44
         if distance < 0.5:
             self.count += 1
             self.center_list.extend((self.world_x, self.world_y))
@@ -220,13 +214,14 @@ class ColorSensing():
                 if key == 27:
                     break
         self.cleanup()
-     
-    def secondCamera(self):
+
+    def second_start(self):
         while True:
-            second_img = self.second_camera.frame
-            if second_img is not None:
-                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
-                cv2.imshow('Bottom', frame_resize)
+            img = self.my_camera.frame
+            if img is not None:
+                frame_resize = cv2.resize(img, self.resolution, interpolation=cv2.INTER_NEAREST)
+                Frame = self.run(frame_resize)           
+                cv2.imshow('Bot', Frame)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
@@ -234,7 +229,6 @@ class ColorSensing():
             
     def cleanup(self):  
         self.my_camera.camera_close()
-        self.second_camera.close()
         cv2.destroyAllWindows()
     
         
@@ -502,23 +496,12 @@ class ArmMove():
 
 
 
-sensor = ColorSensing()
+sensor = ColorSensing(2)
+second_sensor = ColorSensing(0)
 arm = ArmMove()
-<<<<<<< HEAD
-print("starting threads")
-#th = threading.Thread(target=sensor.secondCamera())
-v = threading.Thread(target = sensor.start())
-s = [v]
 
-for i in s:
-    i.setDaemon(True)
-    i.start()
-print("Calling")
-=======
-
-#th = threading.Thread(target=arm.colorSort)
+th = threading.Thread(target=second_sensor.second_start)
 #th.setDaemon(True)
 #th.start()    
 
->>>>>>> 216f9c2e2d0f08d022252cb51fdc3f189b49be44
 sensor.start()
