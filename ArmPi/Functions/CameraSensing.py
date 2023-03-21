@@ -29,6 +29,7 @@ chosenColor = 'None'
 roia = False 
 start = False
 z_r = coordinate['red'][2]
+started_threads = False
 
 
 class ColorSensing():
@@ -148,7 +149,7 @@ class ColorSensing():
             
         color = self.main_color()
         self.color_list.append(color)
-
+        print(self.color_list)
         if distance < 0.5:
             self.count += 1
             self.center_list.extend((self.world_x, self.world_y))
@@ -205,25 +206,29 @@ class ColorSensing():
     def start(self):
         while True:
             img = self.my_camera.frame
-            second_img = self.second_camera.frame
-            #print(img.shape)
-            
-            #frame_gb = cv2.GaussianBlur(frame_resize, (11, 11), 11)
-            if img is not None and second_img is not None:
-                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
+            if img is not None:
                 frame = img.copy()
                 Frame = self.run(frame)           
                 cv2.imshow('Top', Frame)
-
-                cv2.imshow('Bottom', frame_resize)
                 key = cv2.waitKey(1)
                 if key == 27:
                     break
         self.cleanup()
      
+    def secondCamera(self):
+        while True:
+            second_img = self.second_camera.frame
+            if second_img is not None:
+                frame_resize = cv2.resize(second_img, self.resolution, interpolation=cv2.INTER_NEAREST)
+                cv2.imshow('Bottom', frame_resize)
+                key = cv2.waitKey(1)
+                if key == 27:
+                    break
+        self.cleanup()
             
     def cleanup(self):  
         self.my_camera.camera_close()
+        self.second_camera.close()
         cv2.destroyAllWindows()
     
         
@@ -493,9 +498,13 @@ class ArmMove():
 
 sensor = ColorSensing()
 arm = ArmMove()
+print("starting threads")
+#th = threading.Thread(target=sensor.secondCamera())
+v = threading.Thread(target = sensor.start())
+s = [v]
 
-th = threading.Thread(target=arm.colorSort)
-th.setDaemon(True)
-th.start()    
-
+for i in s:
+    i.setDaemon(True)
+    i.start()
+print("Calling")
 sensor.start()
